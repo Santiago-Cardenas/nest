@@ -1,0 +1,39 @@
+name: CI/CD - Build, Test & Deploy to Render
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🧩 Checkout repo
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧱 Build project
+        run: npm run build
+
+      - name: ✅ Run tests
+        run: npm test --if-present
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚀 Trigger Render deploy
+        run: |
+          curl -X POST "https://api.render.com/v1/services/srv-d3npk59gv73c73ci05ug/deploys" \
+          -H "Accept: application/json" \
+          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"

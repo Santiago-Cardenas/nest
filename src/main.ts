@@ -6,7 +6,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Global prefix
+  // Prefijo global
   app.setGlobalPrefix('api');
 
   // CORS
@@ -15,7 +15,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Validation pipe
+  // Pipes globales de validación
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -24,7 +24,7 @@ async function bootstrap() {
     }),
   );
 
-  // Swagger configuration
+  // Configuración de Swagger
   const config = new DocumentBuilder()
     .setTitle('BiblioICESI API')
     .setDescription('Sistema de gestión de biblioteca')
@@ -45,10 +45,13 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
+  // ✅ Render asigna dinámicamente el puerto
   const port = process.env.PORT || 3000;
-  await app.listen(port);
-  
-  console.log(`Application is running on: http://localhost:${port}/api`);
-  console.log(`Swagger docs available at: http://localhost:${port}/api/docs`);
+
+  // ✅ Escuchar en 0.0.0.0 para permitir acceso externo
+  await app.listen(port, '0.0.0.0');
+
+  console.log(`🚀 Application is running on port ${port}`);
+  console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
 }
 bootstrap();

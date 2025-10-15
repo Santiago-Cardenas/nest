@@ -1,0 +1,1529 @@
+{
+	"info": {
+		"_postman_id": "cb063426-4352-4a4a-9d67-bec1d3a48f68",
+		"name": "BiblioIcesi Nest Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39828618",
+		"_collection_link": "https://jugandoando.postman.co/workspace/JugandoAndo-Workspace~22877ddc-191a-40ef-846d-00ade5b58ff0/collection/39828618-cb063426-4352-4a4a-9d67-bec1d3a48f68?action=share&source=collection_link&creator=39828618"
+	},
+	"item": [
+		{
+			"name": "Seed & Auth",
+			"item": [
+				{
+					"name": "Seed DB",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('seed responded with 200 or 201', () => { pm.expect([200,201]).to.include(pm.response.code) });",
+									"// ensure body is JSON and contains a confirmation or arrays",
+									"let body = {};",
+									"try { body = pm.response.json(); } catch(e) { body = {}; }",
+									"pm.test('seed returned object', () => { pm.expect(typeof body).to.eql('object') });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/seed",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"seed"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('login returned 200', () => { pm.expect(pm.response.code).to.eql(200) });",
+									"const res = pm.response.json();",
+									"pm.test('response has access_token', () => { pm.expect(res).to.have.property('access_token') });",
+									"pm.environment.set('adminToken', res.access_token);",
+									"pm.environment.set('admin_id', res.user && res.user.id ? res.user.id : '');",
+									"console.log('admin token set');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@icesi.edu.co\",\n  \"password\": \"Admin123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Student Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('login returned 200', () => { pm.expect(pm.response.code).to.eql(200) });",
+									"const res = pm.response.json();",
+									"pm.test('response has access_token', () => { pm.expect(res).to.have.property('access_token') });",
+									"pm.environment.set('studentToken', res.access_token);",
+									"pm.environment.set('student_id', res.user && res.user.id ? res.user.id : '');",
+									"console.log('student token set');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"student@icesi.edu.co\",\n  \"password\": \"Student123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Librarian Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('login returned 200', () => { pm.expect(pm.response.code).to.eql(200) });",
+									"const res = pm.response.json();",
+									"pm.test('response has access_token', () => { pm.expect(res).to.have.property('access_token') });",
+									"pm.environment.set('libraryToken', res.access_token);",
+									"pm.environment.set('library_id', res.user && res.user.id ? res.user.id : '');",
+									"console.log('library token set');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"librarian@icesi.edu.co\",\n  \"password\": \"Librarian123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ensure Test Book",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// no-op prerequest to keep placeholder"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('ensure test book created or exists', ()=>{",
+									"  if ([200,201].includes(pm.response.code)) {",
+									"    const r = pm.response.json(); pm.environment.set('createdBookId', r.id); pm.expect(r).to.have.property('id');",
+									"  } else if (pm.response.code === 409) {",
+									"    // already exists: try to locate by ISBN or title",
+									"    const base = pm.environment.get('baseUrl');",
+									"    pm.sendRequest({ url: base + '/books', method: 'GET' }, function(err, res) {",
+									"      if (!err && res.code === 200) {",
+									"        const list = res.json();",
+									"        const found = list.find(b=>b.title && b.title.includes('Tmp Book'));",
+									"        if (found) { pm.environment.set('createdBookId', found.id); }",
+									"      }",
+									"    });",
+									"  } else {",
+									"    pm.test('unexpected ensure-book status', ()=>{ pm.expect([200,201,409]).to.include(pm.response.code) });",
+									"  }",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"isbn\": \"0000000000000\",\n  \"title\": \"Tmp Book - for tests\",\n  \"author\": \"Test Suite\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ensure Test Copy",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Ensure createdBookId is present before creating a copy",
+									"if (!pm.environment.get('createdBookId')) {",
+									"  throw new Error('createdBookId missing: run Ensure Test Book first or ensure adminToken is valid');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('ensure test copy created', ()=>{",
+									"  if ([200,201].includes(pm.response.code)) { const r=pm.response.json(); pm.environment.set('createdCopyId', r.id); pm.expect(r).to.have.property('id'); }",
+									"  else { pm.test('ensure-copy returned expected status', ()=>{ pm.expect([200,201,400,409]).to.include(pm.response.code) }) }",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{libraryToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"COPY-SETUP-1\",\n  \"bookId\": \"{{createdBookId}}\",\n  \"status\": \"available\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/copies",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"copies"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Books",
+			"item": [
+				{
+					"name": "Create Book (admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('create book returned 201 or 200', () => { pm.expect([200,201]).to.include(pm.response.code) });",
+									"const r = pm.response.json();",
+									"pm.test('created book id present', () => { pm.expect(r).to.have.property('id') });",
+									"pm.environment.set('createdBookId', r.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"isbn\": \"1234567890123\",\n  \"title\": \"Test Book\",\n  \"author\": \"Tester\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Books",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('books array', () => { const r = pm.response.json(); pm.expect(Array.isArray(r)).to.be.true });",
+									"pm.test('status 200', () => { pm.expect(pm.response.code).to.eql(200) })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/books",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"books"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Book By Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('get book status 200', () => { pm.expect(pm.response.code).to.eql(200) });",
+									"const r = pm.response.json();",
+									"pm.test('response has id', () => { pm.expect(r).to.have.property('id') })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/books/{{createdBookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"books",
+								"{{createdBookId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Book (admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('update book status 200', () => { pm.expect(pm.response.code).to.eql(200) });",
+									"const r = pm.response.json();",
+									"pm.test('title updated', () => { pm.expect(r.title).to.eql('Updated Title') })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated Title\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/books/{{createdBookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"books",
+								"{{createdBookId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Copies",
+			"item": [
+				{
+					"name": "Create Copy (librarian)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Ensure we have a book id before creating a copy. If not, fetch or create one.",
+									"const base = pm.environment.get('baseUrl');",
+									"let bid = pm.environment.get('createdBookId');",
+									"if (!bid || bid === 'null') {",
+									"  pm.sendRequest({",
+									"    url: base + '/books',",
+									"    method: 'GET'",
+									"  }, function (err, res) {",
+									"    if (!err && res.code === 200) {",
+									"      const list = res.json();",
+									"      if (Array.isArray(list) && list.length > 0) {",
+									"        pm.environment.set('createdBookId', list[0].id);",
+									"      } else {",
+									"        // create a temporary book using admin token if available",
+									"        pm.sendRequest({",
+									"          url: base + '/books',",
+									"          method: 'POST',",
+									"          header: [",
+									"            { key: 'Content-Type', value: 'application/json' },",
+									"            { key: 'Authorization', value: 'Bearer ' + (pm.environment.get('adminToken') || '') }",
+									"          ],",
+									"          body: { mode: 'raw', raw: JSON.stringify({ isbn: (Date.now()%10000000000000).toString().padStart(13,'0'), title: 'Tmp Book ' + Date.now(), author: 'Tmp' }) }",
+									"        }, function(e2, r2) {",
+									"          if (!e2 && (r2.code === 200 || r2.code === 201)) {",
+									"            pm.environment.set('createdBookId', r2.json().id);",
+									"          }",
+									"        });",
+									"      }",
+									"    }",
+									"  });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('create copy returned 201 or 200', () => { pm.expect([200,201]).to.include(pm.response.code) });",
+									"const r = pm.response.json();",
+									"pm.test('copy created id present', () => { pm.expect(r).to.have.property('id') });",
+									"pm.environment.set('createdCopyId', r.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{libraryToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"COPY-TEST-1\",\n  \"bookId\": \"{{createdBookId}}\",\n  \"status\": \"available\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/copies",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"copies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Copies",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('copies array', () => {",
+									"  const r = pm.response.json();",
+									"  pm.expect(Array.isArray(r)).to.be.true;",
+									"});",
+									"",
+									"pm.test('status 200', () => {",
+									"  pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"// Guardar id del primer elemento en copy2update",
+									"let list = [];",
+									"try { list = pm.response.json(); } catch (e) { list = []; }",
+									"",
+									"if (Array.isArray(list) && list.length > 0) {",
+									"  const first = list[0];",
+									"  pm.test('first copy has id', () => pm.expect(first).to.have.property('id'));",
+									"  pm.environment.set('copy2update', first.id);",
+									"  console.log('copy2update =', first.id);",
+									"} else {",
+									"  pm.environment.unset('copy2update');",
+									"  pm.test('at least one copy exists', () => {",
+									"    pm.expect(list.length, 'No copies returned').to.be.above(0);",
+									"  });",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/copies",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"copies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Copy Availability",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Ensure createdCopyId exists; if not, fetch first copy",
+									"const base = pm.environment.get('baseUrl');",
+									"let cid = pm.environment.get('createdCopyId');",
+									"if (!cid || cid === 'null') {",
+									"  pm.sendRequest({ url: base + '/copies', method: 'GET' }, function(err, res) {",
+									"    if (!err && res.code === 200) {",
+									"      const list = res.json();",
+									"      if (Array.isArray(list) && list.length>0) { pm.environment.set('createdCopyId', list[0].id); }",
+									"    }",
+									"  });",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('availability status 200', ()=>{ pm.expect(pm.response.code).to.eql(200) })",
+									"const r = pm.response.json();",
+									"pm.test('has available boolean', ()=>{ pm.expect(r).to.have.property('isAvailable') })"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/copies/{{createdCopyId}}/availability",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"copies",
+								"{{createdCopyId}}",
+								"availability"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Copy (admin)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const base = pm.environment.get('baseUrl');",
+									"let cid = pm.environment.get('createdCopyId');",
+									"if (!cid || cid === 'null') {",
+									"  pm.sendRequest({ url: base + '/copies', method: 'GET' }, function(err, res) {",
+									"    if (!err && res.code === 200) {",
+									"      const list = res.json();",
+									"      if (Array.isArray(list) && list.length>0) { pm.environment.set('createdCopyId', list[0].id); }",
+									"    }",
+									"  });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('update copy status 200', ()=>{ pm.expect(pm.response.code).to.eql(200) });",
+									"const r=pm.response.json();",
+									"pm.test('copy id exists', ()=>{ pm.expect(r).to.have.property('id') })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"COPY-UPDATED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/copies/{{createdCopyId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"copies",
+								"{{createdCopyId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Copy Status (librarian)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const base = pm.environment.get('baseUrl');",
+									"let cid = pm.environment.get('createdCopyId');",
+									"if (!cid || cid === 'null') {",
+									"  pm.sendRequest({ url: base + '/copies', method: 'GET' }, function(err, res) {",
+									"    if (!err && res.code === 200) {",
+									"      const list = res.json();",
+									"      if (Array.isArray(list) && list.length>0) { pm.environment.set('createdCopyId', list[0].id); }",
+									"    }",
+									"  });",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('update copy status returned 200', ()=>{ pm.expect(pm.response.code).to.eql(200) })",
+									"const r=pm.response.json(); pm.test('status changed present', ()=>{ pm.expect(r).to.have.property('status') })"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{libraryToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"maintenance\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/copies/{{copy2update}}/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"copies",
+								"{{copy2update}}",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Loans",
+			"item": [
+				{
+					"name": "Create Loan (student)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Ensure a copy id exists before creating a loan",
+									"const base = pm.environment.get('baseUrl');",
+									"let cid = pm.environment.get('createdCopyId');",
+									"if (!cid || cid === 'null') {",
+									"  pm.sendRequest({ url: base + '/copies', method: 'GET' }, function(err, res) {",
+									"    if (!err && res.code === 200) {",
+									"      const list = res.json();",
+									"      if (Array.isArray(list) && list.length>0) { pm.environment.set('createdCopyId', list[0].id); }",
+									"    }",
+									"  });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('create loan returned 201/200', ()=>{ pm.expect([200,201]).to.include(pm.response.code) })",
+									"const r = pm.response.json();",
+									"pm.test('loan created id present', ()=>{ pm.expect(r).to.have.property('id') });",
+									"pm.environment.set('createdLoanId', r.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{studentToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"copyId\": \"{{createdCopyId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/loans",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"loans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Loans (student)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('my loans returned 200', ()=>{ pm.expect(pm.response.code).to.eql(200) })",
+									"const r=pm.response.json(); pm.test('my loans is array', ()=>{ pm.expect(Array.isArray(r)).to.be.true })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{studentToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/loans/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"loans",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Return Loan (admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('return loan returned 200', ()=>{ pm.expect(pm.response.code).to.eql(200) })",
+									"const r = pm.response.json(); pm.test('returned has id', ()=>{ pm.expect(r).to.have.property('id') })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/loans/{{createdLoanId}}/return",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"loans",
+								"{{createdLoanId}}",
+								"return"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Loans (admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('list loans returned 200', ()=>{ pm.expect(pm.response.code).to.eql(200) })",
+									"const r=pm.response.json(); pm.test('loans is array', ()=>{ pm.expect(Array.isArray(r)).to.be.true })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/loans",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"loans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Loan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('delete loan returned 200', () => {\r",
+									"  pm.expect([200]).to.include(pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/loans/{{createdLoanId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"loans",
+								"{{createdLoanId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reservations",
+			"item": [
+				{
+					"name": "Create Reservation (student)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Ensure a copy id exists before creating a reservation",
+									"const base = pm.environment.get('baseUrl');",
+									"let cid = pm.environment.get('createdCopyId');",
+									"if (!cid || cid === 'null') {",
+									"  pm.sendRequest({ url: base + '/copies', method: 'GET' }, function(err, res) {",
+									"    if (!err && res.code === 200) {",
+									"      const list = res.json();",
+									"      if (Array.isArray(list) && list.length>0) { pm.environment.set('createdCopyId', list[0].id); }",
+									"    }",
+									"  });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('create reservation returned 201/200', ()=>{ pm.expect([200,201]).to.include(pm.response.code) })",
+									"const r = pm.response.json();",
+									"pm.test('reservation created id present', ()=>{ pm.expect(r).to.have.property('id') });",
+									"pm.environment.set('createdReservationId', r.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{studentToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"copyId\": \"{{createdCopyId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reservations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reservations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "My Reservations (student)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('my reservations returned 200', ()=>{ pm.expect(pm.response.code).to.eql(200) })",
+									"const r=pm.response.json(); pm.test('is array', ()=>{ pm.expect(Array.isArray(r)).to.be.true })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{studentToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reservations/my",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reservations",
+								"my"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Reservation (owner or admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('cancel reservation returned 200', ()=>{ pm.expect(pm.response.code).to.eql(200) })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{studentToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reservations/{{createdReservationId}}/cancel",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reservations",
+								"{{createdReservationId}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reservations Stats (admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('reservations stats returned 200', ()=>{ pm.expect(pm.response.code).to.eql(200) })",
+									"const r=pm.response.json(); pm.test('is object', ()=>{ pm.expect(typeof r).to.eql('object') })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reservations/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reservations",
+								"stats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Reservation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('delete loan returned 204', () => {\r",
+									"  pm.expect([204]).to.include(pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reservations/{{createdReservationId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reservations",
+								"{{createdReservationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Copy (admin)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const base = pm.environment.get('baseUrl');",
+									"let cid = pm.environment.get('createdCopyId');",
+									"if (!cid || cid === 'null') {",
+									"  pm.sendRequest({ url: base + '/copies', method: 'GET' }, function(err, res) {",
+									"    if (!err && res.code === 200) {",
+									"      const list = res.json();",
+									"      if (Array.isArray(list) && list.length>0) { pm.environment.set('createdCopyId', list[0].id); }",
+									"    }",
+									"  });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('delete copy returned 200/204', ()=>{ pm.expect([200,204,201]).to.include(pm.response.code) })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/copies/{{createdCopyId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"copies",
+								"{{createdCopyId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Book (admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('delete book returned 200/204', () => { pm.expect([200,204,201]).to.include(pm.response.code) });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/books/{{createdBookId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"books",
+								"{{createdBookId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Create User (admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if ([200,201].includes(pm.response.code)) {",
+									"  const r = pm.response.json();",
+									"  pm.environment.set('createdUserId', r.id);",
+									"  pm.test('user created id present', ()=>{ pm.expect(r).to.have.property('id') });",
+									"} else if (pm.response.code === 409) {",
+									"  // user already exists - try to find it and set id",
+									"  const base = pm.environment.get('baseUrl');",
+									"  const email = 'newuser@icesi.edu.co';",
+									"  pm.sendRequest({ url: base + '/users', method: 'GET', header: [ { key: 'Authorization', value: 'Bearer ' + (pm.environment.get('adminToken')||'') } ] }, function(err, res) {",
+									"    if (!err && res.code === 200) {",
+									"      const list = res.json();",
+									"      const found = list.find(u => u.email === email);",
+									"      if (found) { pm.environment.set('createdUserId', found.id); pm.test('found existing user and set id', ()=>{ pm.expect(found).to.have.property('id') }) }",
+									"    }",
+									"  });",
+									"  pm.test('create user returned 409 (already exists)', ()=>{ pm.expect(pm.response.code).to.eql(409) });",
+									"} else {",
+									"  pm.test('unexpected status', ()=>{ pm.expect([200,201,409]).to.include(pm.response.code) });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newuser@icesi.edu.co\",\n  \"password\": \"Password123!\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Profile (student)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('profile returned 200', ()=>{ pm.expect(pm.response.code).to.eql(200) })",
+									"const r=pm.response.json(); pm.test('profile has email', ()=>{ pm.expect(r).to.have.property('email') })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{studentToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update My Profile (student)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('update profile returned 200', ()=>{ pm.expect(pm.response.code).to.eql(200) })",
+									"const r=pm.response.json(); pm.test('firstName updated', ()=>{ pm.expect(r.firstName).to.eql('Updated') })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{studentToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Updated\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Users (admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('list users returned 200', ()=>{ pm.expect(pm.response.code).to.eql(200) })",
+									"const r=pm.response.json(); pm.test('users array', ()=>{ pm.expect(Array.isArray(r)).to.be.true })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User (admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('delete user returned 200/204', ()=>{ pm.expect([200,204,201]).to.include(pm.response.code) })"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{createdUserId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{createdUserId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Seed DB Clear",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/seed/clear",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"seed",
+						"clear"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -23,12 +23,6 @@ export class SeedService {
       const currentDbResult = await this.dataSource.query(`SELECT current_database() as db;`);
       const currentDb = currentDbResult?.[0]?.db;
 
-      if (currentDb !== 'biblio' || currentDb !== 'bibliodb_awdg') {
-        return {
-          message: `Abortado: la base de datos actual es '${currentDb}'. Este clear() está configurado para ejecutarse sólo en 'biblio'.`,
-        };
-      }
-
       await this.dataSource.query("SET session_replication_role = replica;");
 
       const tables: Array<{ tablename: string }> = await this.dataSource.query(`

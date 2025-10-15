@@ -9,6 +9,19 @@ export default registerAs(
     const isTestEnv = process.env.NODE_ENV === 'test' || !!process.env.JEST_WORKER_ID;
     const type = (forcedType as any) ?? (isTestEnv ? 'sqlite' : 'postgres');
 
+    // If a DATABASE_URL is provided (Render, Heroku, etc.), use it. Optionally allow DB_SSL flag.
+    if (process.env.DATABASE_URL && type === 'postgres') {
+      const ssl = process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined;
+      return {
+        type: 'postgres',
+        url: process.env.DATABASE_URL,
+        // allow SSL configuration
+        ssl,
+        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+        synchronize: process.env.DB_SYNCHRONIZE === 'true',
+      } as TypeOrmModuleOptions;
+    }
+
     return {
       // Use sqlite in-memory when running tests unless overridden
       type,

@@ -11,6 +11,7 @@ import { LoansModule } from './loans/loans.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { GoogleBooksModule } from './google-books/google-books.module';
 import { SeedModule } from './seed/seed.module';
+import { HealthModule } from './health/health.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -39,6 +40,7 @@ import { AppService } from './app.service';
     ReservationsModule,
     GoogleBooksModule,
     SeedModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

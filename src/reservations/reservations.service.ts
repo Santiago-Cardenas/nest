@@ -149,13 +149,10 @@ export class ReservationsService {
     }
 
     reservation.status = ReservationStatus.FULFILLED;
-    // Actualizar el estado del ejemplar: cuando se marca la reserva como cumplida
-    // también se libera el ejemplar y pasa a AVAILABLE
-    // (Nota: el ejemplar pasará a BORROWED cuando se cree el préstamo)
-    await this.copiesService.updateStatus(
-      reservation.copyId,
-      CopyStatus.AVAILABLE,
-    );
+
+    // Al cumplirse la reserva, liberar el ejemplar (pasará a AVAILABLE).
+    // El ejemplar pasará a BORROWED cuando se cree el préstamo.
+    await this.copiesService.updateStatus(reservation.copyId, CopyStatus.AVAILABLE);
 
     return this.reservationsRepository.save(reservation);
   }

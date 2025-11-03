@@ -7,8 +7,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Copy, CopyStatus } from './entities/copy.entity';
-import { Reservation, ReservationStatus } from '../reservations/entities/reservation.entity';
-import { Loan, LoanStatus } from '../loans/entities/loan.entity';
 import { CreateCopyDto } from './dto/create-copy.dto';
 import { UpdateCopyDto } from './dto/update-copy.dto';
 import { BooksService } from '../books/books.service';
@@ -19,10 +17,6 @@ export class CopiesService {
     @InjectRepository(Copy)
     private copiesRepository: Repository<Copy>,
     private booksService: BooksService,
-    @InjectRepository(Reservation)
-    private reservationsRepository: Repository<Reservation>,
-    @InjectRepository(Loan)
-    private loansRepository: Repository<Loan>,
   ) {}
 
   async create(createCopyDto: CreateCopyDto): Promise<Copy> {
@@ -41,7 +35,9 @@ export class CopiesService {
   }
 
   async findAll(): Promise<Copy[]> {
-    return this.copiesRepository.find({ relations: ['book'] });
+    const copies = await this.copiesRepository.find({ relations: ['book'] });
+    // Excluir copias marcadas como DELETED
+    return copies.filter((c) => c.status !== CopyStatus.DELETED);
   }
 
   async findAvailable(): Promise<Copy[]> {
@@ -58,6 +54,10 @@ export class CopiesService {
     });
 
     if (!copy) {
+      throw new NotFoundException('Copy not found');
+    }
+
+    if (copy.status === CopyStatus.DELETED) {
       throw new NotFoundException('Copy not found');
     }
 
@@ -93,55 +93,8 @@ export class CopiesService {
   async remove(id: string): Promise<void> {
     const copy = await this.findOne(id);
 
-    // Buscar reservas relacionadas
-    const reservations = await this.reservationsRepository.find({ where: { copyId: id } });
-
-    // Si hay reservas pendientes, no permitimos eliminar la copia
-    const hasPendingReservation = reservations.some(
-      (r) => r.status === ReservationStatus.PENDING,
-    );
-    if (hasPendingReservation) {
-      throw new BadRequestException('Cannot delete copy with pending reservations');
-    }
-
-    // Buscar préstamos relacionados
-    const loans = await this.loansRepository.find({ where: { copyId: id } });
-
-    // Si hay préstamos activos u overdue, no permitimos eliminar la copia
-    const hasActiveLoan = loans.some(
-      (l) => l.status === LoanStatus.ACTIVE || l.status === LoanStatus.OVERDUE,
-    );
-    if (hasActiveLoan) {
-      throw new BadRequestException('Cannot delete copy with active or overdue loans');
-    }
-
-    // Crear un "dummy" copy para reemplazar referencias históricas (fulfilled/returned/cancelled/expired)
-    const dummyCode = `dummy-${copy.id}`;
-    const dummyCopy = this.copiesRepository.create({
-      code: dummyCode,
-      bookId: copy.bookId,
-      status: CopyStatus.AVAILABLE,
-    });
-
-    const savedDummy = await this.copiesRepository.save(dummyCopy);
-
-    // Reasignar reservas (no pendientes) al dummy
-    for (const reservation of reservations) {
-      // Solo reasignar reservas no pendientes (fulfilled/cancelled/expired)
-      if (reservation.status !== ReservationStatus.PENDING) {
-        reservation.copyId = savedDummy.id;
-        await this.reservationsRepository.save(reservation);
-      }
-    }
-
-    // Reasignar préstamos (no activos/overdue) al dummy
-    for (const loan of loans) {
-      if (loan.status === LoanStatus.RETURNED) {
-        loan.copyId = savedDummy.id;
-        await this.loansRepository.save(loan);
-      }
-    }
-
-    await this.copiesRepository.remove(copy);
+    // Soft delete: marcar como DELETED y guardar
+    copy.status = CopyStatus.DELETED;
+    await this.copiesRepository.save(copy);
   }
 }

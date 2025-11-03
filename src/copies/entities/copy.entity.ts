@@ -18,6 +18,7 @@ export enum CopyStatus {
   RESERVED = 'reserved',
   MAINTENANCE = 'maintenance',
   LOST = 'lost',
+  DELETED = 'deleted',
 }
 
 @Entity('copies')

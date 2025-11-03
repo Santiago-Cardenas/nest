@@ -5,8 +5,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { CopiesService } from './copies.service';
 import { Copy, CopyStatus } from './entities/copy.entity';
 import { BooksService } from '../books/books.service';
-import { Reservation } from '../reservations/entities/reservation.entity';
-import { Loan } from '../loans/entities/loan.entity';
+
 
 describe('CopiesService', () => {
   let service: CopiesService;
@@ -24,17 +23,6 @@ describe('CopiesService', () => {
     findOne: jest.fn(),
   };
 
-  const mockReservationRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-  };
-
-  const mockLoanRepository = {
-    find: jest.fn(),
-    findOne: jest.fn(),
-    save: jest.fn(),
-  };
 
   const mockCopy: Copy = {
     id: 'copy-1',
@@ -54,8 +42,6 @@ describe('CopiesService', () => {
         CopiesService,
         { provide: getRepositoryToken(Copy), useValue: mockRepository },
         { provide: BooksService, useValue: mockBooksService },
-        { provide: getRepositoryToken(Reservation), useValue: mockReservationRepository },
-        { provide: getRepositoryToken(Loan), useValue: mockLoanRepository },
       ],
     }).compile();
 
@@ -63,9 +49,6 @@ describe('CopiesService', () => {
     repository = module.get<Repository<Copy>>(getRepositoryToken(Copy));
 
     jest.clearAllMocks();
-    // Default mocks for related repositories (no relations by default)
-    mockReservationRepository.find.mockResolvedValue([]);
-    mockLoanRepository.find.mockResolvedValue([]);
   });
 
   it('should be defined', () => {
@@ -138,9 +121,9 @@ describe('CopiesService', () => {
   describe('remove', () => {
     it('removes copy', async () => {
       mockRepository.findOne.mockResolvedValue(mockCopy);
-      mockRepository.remove.mockResolvedValue(undefined);
+      mockRepository.save.mockResolvedValue({ ...mockCopy, status: CopyStatus.DELETED });
       await service.remove('copy-1');
-      expect(mockRepository.remove).toHaveBeenCalledWith(mockCopy);
+      expect(mockRepository.save).toHaveBeenCalledWith(expect.objectContaining({ id: 'copy-1', status: CopyStatus.DELETED }));
     });
   });
 });

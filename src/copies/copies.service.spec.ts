@@ -11,7 +11,7 @@ describe('CopiesService', () => {
   let service: CopiesService;
   let repository: Repository<Copy>;
 
-  const mockRepository = {
+  const mockRepository: any = {
     findOne: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
@@ -21,6 +21,13 @@ describe('CopiesService', () => {
 
   const mockBooksService = {
     findOne: jest.fn(),
+  };
+
+  const mockSimpleRepository = {
+    findOne: jest.fn(),
+    find: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
   };
 
 
@@ -41,12 +48,23 @@ describe('CopiesService', () => {
       providers: [
         CopiesService,
         { provide: getRepositoryToken(Copy), useValue: mockRepository },
+        { provide: getRepositoryToken(require('../reservations/entities/reservation.entity').Reservation), useValue: mockSimpleRepository },
+        { provide: getRepositoryToken(require('../loans/entities/loan.entity').Loan), useValue: mockSimpleRepository },
         { provide: BooksService, useValue: mockBooksService },
       ],
     }).compile();
 
     service = module.get<CopiesService>(CopiesService);
     repository = module.get<Repository<Copy>>(getRepositoryToken(Copy));
+
+    // Provide a fake manager.transaction on the mock repository so the service
+    // can call transactions during tests.
+    mockRepository.manager = {
+      transaction: jest.fn(async (cb: any) => {
+        const manager = { update: mockSimpleRepository.update, delete: mockSimpleRepository.delete };
+        return cb(manager);
+      }),
+    } as any;
 
     jest.clearAllMocks();
   });
@@ -121,9 +139,16 @@ describe('CopiesService', () => {
   describe('remove', () => {
     it('removes copy', async () => {
       mockRepository.findOne.mockResolvedValue(mockCopy);
-      mockRepository.save.mockResolvedValue({ ...mockCopy, status: CopyStatus.DELETED });
+      // Ensure transaction's manager methods are mocked
+      mockSimpleRepository.update.mockResolvedValue(undefined);
+      mockSimpleRepository.delete.mockResolvedValue(undefined);
+
       await service.remove('copy-1');
-      expect(mockRepository.save).toHaveBeenCalledWith(expect.objectContaining({ id: 'copy-1', status: CopyStatus.DELETED }));
+
+      // Expect a transaction was executed and manager.update / manager.delete were called
+      expect(mockRepository.manager.transaction).toHaveBeenCalled();
+      expect(mockSimpleRepository.update).toHaveBeenCalled();
+      expect(mockSimpleRepository.delete).toHaveBeenCalled();
     });
   });
 });

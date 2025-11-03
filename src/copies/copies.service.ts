@@ -5,17 +5,23 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Copy, CopyStatus } from './entities/copy.entity';
 import { CreateCopyDto } from './dto/create-copy.dto';
 import { UpdateCopyDto } from './dto/update-copy.dto';
 import { BooksService } from '../books/books.service';
+import { Reservation, ReservationStatus } from '../reservations/entities/reservation.entity';
+import { Loan } from '../loans/entities/loan.entity';
 
 @Injectable()
 export class CopiesService {
   constructor(
     @InjectRepository(Copy)
     private copiesRepository: Repository<Copy>,
+    @InjectRepository(Reservation)
+    private reservationsRepository: Repository<Reservation>,
+    @InjectRepository(Loan)
+    private loansRepository: Repository<Loan>,
     private booksService: BooksService,
   ) {}
 
@@ -86,15 +92,35 @@ export class CopiesService {
 
   async updateStatus(id: string, status: CopyStatus): Promise<Copy> {
     const copy = await this.findOne(id);
+
+    // If marking as DELETED, cancel reservations and delete loans referencing this copy
+    if (status === CopyStatus.DELETED) {
+      await this.copiesRepository.manager.transaction(async (manager) => {
+        // Cancel pending reservations for this copy (set to CANCELLED). Do NOT change copy status to AVAILABLE.
+        await manager.update(
+          Reservation,
+          { copyId: id, status: ReservationStatus.PENDING },
+          { status: ReservationStatus.CANCELLED },
+        );
+
+        // Delete all loans referencing this copy
+        await manager.delete(Loan, { copyId: id });
+
+        // Finally mark the copy as DELETED
+        await manager.update(Copy, { id }, { status: CopyStatus.DELETED });
+      });
+
+      // Return the updated copy (fetch fresh)
+      const updated = await this.copiesRepository.findOne({ where: { id } });
+      return updated as Copy;
+    }
+
     copy.status = status;
     return this.copiesRepository.save(copy);
   }
 
   async remove(id: string): Promise<void> {
-    const copy = await this.findOne(id);
-
-    // Soft delete: marcar como DELETED y guardar
-    copy.status = CopyStatus.DELETED;
-    await this.copiesRepository.save(copy);
+    // Reuse updateStatus to perform the proper cleanup when deleting
+    await this.updateStatus(id, CopyStatus.DELETED);
   }
 }

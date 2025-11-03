@@ -208,7 +208,10 @@ export class SeedService {
       const copies: Copy[] = [];
       savedBooks.forEach((book, index) => {
         for (let i = 1; i <= 3; i++) {
-          const code = `COPY-${String(index + 1).padStart(3, '0')}-${i}`;
+          // Use the book ISBN in the copy code: COPY-<ISBN>-<copyNumber>
+          // Fall back to the book id if ISBN is missing for safety.
+          const isbnPart = book.isbn ?? String(book.id);
+          const code = `COPY-${isbnPart}-${i}`;
           copies.push({ code, bookId: book.id, status: CopyStatus.AVAILABLE } as any);
         }
       });

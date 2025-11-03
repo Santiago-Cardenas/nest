@@ -5,6 +5,8 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { CopiesService } from './copies.service';
 import { Copy, CopyStatus } from './entities/copy.entity';
 import { BooksService } from '../books/books.service';
+import { Reservation } from '../reservations/entities/reservation.entity';
+import { Loan } from '../loans/entities/loan.entity';
 
 describe('CopiesService', () => {
   let service: CopiesService;
@@ -20,6 +22,18 @@ describe('CopiesService', () => {
 
   const mockBooksService = {
     findOne: jest.fn(),
+  };
+
+  const mockReservationRepository = {
+    find: jest.fn(),
+    findOne: jest.fn(),
+    save: jest.fn(),
+  };
+
+  const mockLoanRepository = {
+    find: jest.fn(),
+    findOne: jest.fn(),
+    save: jest.fn(),
   };
 
   const mockCopy: Copy = {
@@ -40,6 +54,8 @@ describe('CopiesService', () => {
         CopiesService,
         { provide: getRepositoryToken(Copy), useValue: mockRepository },
         { provide: BooksService, useValue: mockBooksService },
+        { provide: getRepositoryToken(Reservation), useValue: mockReservationRepository },
+        { provide: getRepositoryToken(Loan), useValue: mockLoanRepository },
       ],
     }).compile();
 
@@ -47,6 +63,9 @@ describe('CopiesService', () => {
     repository = module.get<Repository<Copy>>(getRepositoryToken(Copy));
 
     jest.clearAllMocks();
+    // Default mocks for related repositories (no relations by default)
+    mockReservationRepository.find.mockResolvedValue([]);
+    mockLoanRepository.find.mockResolvedValue([]);
   });
 
   it('should be defined', () => {

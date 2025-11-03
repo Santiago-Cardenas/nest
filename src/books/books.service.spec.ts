@@ -4,6 +4,9 @@ import { Repository } from 'typeorm';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { Book } from './entities/book.entity';
+import { Copy } from '../copies/entities/copy.entity';
+import { Loan } from '../loans/entities/loan.entity';
+import { Reservation } from '../reservations/entities/reservation.entity';
 
 describe('BooksService', () => {
   let service: BooksService;
@@ -14,6 +17,13 @@ describe('BooksService', () => {
     create: jest.fn(),
     save: jest.fn(),
     find: jest.fn(),
+    remove: jest.fn(),
+  };
+
+  const mockSimpleRepository = {
+    findOne: jest.fn(),
+    find: jest.fn(),
+    delete: jest.fn(),
     remove: jest.fn(),
   };
 
@@ -33,6 +43,9 @@ describe('BooksService', () => {
       providers: [
         BooksService,
         { provide: getRepositoryToken(Book), useValue: mockRepository },
+        { provide: getRepositoryToken(Copy), useValue: mockSimpleRepository },
+        { provide: getRepositoryToken(Loan), useValue: mockSimpleRepository },
+        { provide: getRepositoryToken(Reservation), useValue: mockSimpleRepository },
       ],
     }).compile();
 

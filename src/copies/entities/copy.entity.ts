@@ -36,7 +36,7 @@ export class Copy {
   })
   status: CopyStatus;
 
-  @ManyToOne(() => Book, (book) => book.copies, { eager: true })
+  @ManyToOne(() => Book, (book) => book.copies, { eager: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'bookId' })
   book: Book;
 

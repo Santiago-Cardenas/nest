@@ -28,7 +28,7 @@ export class Loan {
   @Column()
   userId: string;
 
-  @ManyToOne(() => Copy, (copy) => copy.loans, { eager: true })
+  @ManyToOne(() => Copy, (copy) => copy.loans, { eager: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'copyId' })
   copy: Copy;
 

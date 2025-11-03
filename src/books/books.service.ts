@@ -4,8 +4,11 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, Like, In } from 'typeorm';
 import { Book } from './entities/book.entity';
+import { Copy } from '../copies/entities/copy.entity';
+import { Loan } from '../loans/entities/loan.entity';
+import { Reservation } from '../reservations/entities/reservation.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 
@@ -14,6 +17,12 @@ export class BooksService {
   constructor(
     @InjectRepository(Book)
     private booksRepository: Repository<Book>,
+    @InjectRepository(Copy)
+    private copiesRepository: Repository<Copy>,
+    @InjectRepository(Loan)
+    private loansRepository: Repository<Loan>,
+    @InjectRepository(Reservation)
+    private reservationsRepository: Repository<Reservation>,
   ) {}
 
   async create(createBookDto: CreateBookDto): Promise<Book> {
@@ -79,7 +88,30 @@ export class BooksService {
   }
 
   async remove(id: string): Promise<void> {
-    const book = await this.findOne(id);
-    await this.booksRepository.remove(book);
+    // Ensure the book exists
+    await this.findOne(id);
+
+    // Perform deletions inside a transaction to keep DB consistent
+    await this.booksRepository.manager.transaction(async (manager) => {
+      // Find copies for the book
+      const copies = await manager.find(Copy, {
+        where: { bookId: id } as any,
+        select: ['id'],
+      });
+
+      const copyIds = copies.map((c: any) => c.id);
+
+      if (copyIds.length > 0) {
+        // Delete reservations and loans referencing those copies
+  await manager.delete(Reservation, { copyId: In(copyIds) });
+  await manager.delete(Loan, { copyId: In(copyIds) });
+
+  // Delete the copies themselves
+  await manager.delete(Copy, { id: In(copyIds) });
+      }
+
+      // Finally delete the book
+      await manager.delete(Book, { id });
+    });
   }
 }

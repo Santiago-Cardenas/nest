@@ -29,7 +29,7 @@ export class Reservation {
   @Column()
   userId: string;
 
-  @ManyToOne(() => Copy, (copy) => copy.reservations, { eager: true })
+  @ManyToOne(() => Copy, (copy) => copy.reservations, { eager: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'copyId' })
   copy: Copy;
 

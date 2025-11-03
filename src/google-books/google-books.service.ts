@@ -108,13 +108,9 @@ export class GoogleBooksService {
       thumbnail: bookInfo.imageLinks?.thumbnail,
     };
 
-    const existingBook = await this.booksService.findByIsbn(isbn);
-
-    if (existingBook) {
-      return this.booksService.update(existingBook.id, createBookDto);
-    }
-
-    return this.booksService.create(createBookDto);
+    // Do NOT create or update the book here — only return the data to the caller.
+    // The frontend will call the create endpoint when the user confirms.
+    return createBookDto;
   }
 
   async getVolumeById(volumeId: string) {

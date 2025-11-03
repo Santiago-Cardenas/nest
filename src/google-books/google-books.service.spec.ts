@@ -71,11 +71,22 @@ describe('GoogleBooksService', () => {
     const googleData = { items: [{ volumeInfo: { title: 'T', authors: ['A'], imageLinks: { thumbnail: 't' } } }] };
     mockHttpService.get.mockReturnValue(of({ data: googleData }));
     mockBooksService.findByIsbn.mockResolvedValue(null);
-    mockBooksService.create.mockResolvedValue({ id: 'b1' });
 
     const res = await service.enrichBookData('9780132350884');
-    expect(mockBooksService.create).toHaveBeenCalled();
-    expect(res).toEqual({ id: 'b1' });
+    // Should NOT create the book automatically; return only the DTO to the caller
+    expect(mockBooksService.create).not.toHaveBeenCalled();
+    expect(res).toEqual({
+      isbn: '9780132350884',
+      title: 'T',
+      author: 'A',
+      publisher: undefined,
+      publishedDate: undefined,
+      description: undefined,
+      pageCount: undefined,
+      categories: undefined,
+      language: undefined,
+      thumbnail: 't',
+    });
   });
 
   it('enrichBookData should update when book exists', async () => {
@@ -83,11 +94,22 @@ describe('GoogleBooksService', () => {
     const googleData = { items: [{ volumeInfo: { title: 'T', authors: ['A'] } }] };
     mockHttpService.get.mockReturnValue(of({ data: googleData }));
     mockBooksService.findByIsbn.mockResolvedValue({ id: 'b1' });
-    mockBooksService.update.mockResolvedValue({ id: 'b1', title: 'T' });
 
     const res = await service.enrichBookData('9780132350884');
-    expect(mockBooksService.update).toHaveBeenCalled();
-    expect(res).toEqual({ id: 'b1', title: 'T' });
+    // Should NOT update the book automatically; return only the DTO
+    expect(mockBooksService.update).not.toHaveBeenCalled();
+    expect(res).toEqual({
+      isbn: '9780132350884',
+      title: 'T',
+      author: 'A',
+      publisher: undefined,
+      publishedDate: undefined,
+      description: undefined,
+      pageCount: undefined,
+      categories: undefined,
+      language: undefined,
+      thumbnail: undefined,
+    });
   });
 
   it('getVolumeById throws BAD_REQUEST when id empty', async () => {

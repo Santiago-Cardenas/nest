@@ -145,10 +145,11 @@ describe('CopiesService', () => {
 
       await service.remove('copy-1');
 
-      // Expect a transaction was executed and manager.update / manager.delete were called
-      expect(mockRepository.manager.transaction).toHaveBeenCalled();
-      expect(mockSimpleRepository.update).toHaveBeenCalled();
-      expect(mockSimpleRepository.delete).toHaveBeenCalled();
+  // Expect a transaction was executed and manager.update was called.
+  // We no longer delete Loan records when marking a copy as DELETED, so ensure delete was NOT called.
+  expect(mockRepository.manager.transaction).toHaveBeenCalled();
+  expect(mockSimpleRepository.update).toHaveBeenCalled();
+  expect(mockSimpleRepository.delete).not.toHaveBeenCalled();
     });
   });
 });

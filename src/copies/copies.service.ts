@@ -93,7 +93,7 @@ export class CopiesService {
   async updateStatus(id: string, status: CopyStatus): Promise<Copy> {
     const copy = await this.findOne(id);
 
-    // If marking as DELETED, cancel reservations and delete loans referencing this copy
+    // If marking as DELETED, cancel reservations. Do NOT delete loans referencing this copy
     if (status === CopyStatus.DELETED) {
       await this.copiesRepository.manager.transaction(async (manager) => {
         // Cancel pending reservations for this copy (set to CANCELLED). Do NOT change copy status to AVAILABLE.
@@ -103,9 +103,7 @@ export class CopiesService {
           { status: ReservationStatus.CANCELLED },
         );
 
-        // Delete all loans referencing this copy
-        await manager.delete(Loan, { copyId: id });
-
+        // Do NOT delete loans referencing this copy. Keep historical loans as-is so they remain visible.
         // Finally mark the copy as DELETED
         await manager.update(Copy, { id }, { status: CopyStatus.DELETED });
       });

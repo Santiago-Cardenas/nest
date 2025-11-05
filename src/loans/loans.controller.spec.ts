@@ -39,6 +39,16 @@ describe('LoansController', () => {
     });
   });
 
+  describe('createForUser', () => {
+    it('calls service.create with provided userId and dto', async () => {
+      const dto = { userId: 'user-x', copyId: 'copy-x', notes: 'note' } as any;
+      mockService.create.mockResolvedValue({ id: 'loan-x', userId: 'user-x', copyId: 'copy-x' });
+      const res = await controller.createForUser(dto);
+      expect(mockService.create).toHaveBeenCalledWith('user-x', dto);
+      expect(res).toEqual({ id: 'loan-x', userId: 'user-x', copyId: 'copy-x' });
+    });
+  });
+
   describe('findAll', () => {
     it('calls service.findAll', async () => {
       mockService.findAll.mockResolvedValue([{ id: 'l1' }]);

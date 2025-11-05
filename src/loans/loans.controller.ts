@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { LoansService } from './loans.service';
 import { CreateLoanDto } from './dto/create-loan.dto';
+import { CreateLoanForUserDto } from './dto/create-loan-for-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -35,6 +36,14 @@ export class LoansController {
   @ApiResponse({ status: 201, description: 'Loan created successfully' })
   create(@Request() req, @Body() createLoanDto: CreateLoanDto) {
     return this.loansService.create(req.user.id, createLoanDto);
+  }
+
+  @Post('for-user')
+  @Roles(UserRole.ADMIN, UserRole.LIBRARIAN)
+  @ApiOperation({ summary: 'Create a new loan for a specified user and copy (Admin/Librarian only)' })
+  @ApiResponse({ status: 201, description: 'Loan created successfully for specified user' })
+  createForUser(@Body() createLoanForUserDto: CreateLoanForUserDto) {
+    return this.loansService.create(createLoanForUserDto.userId, createLoanForUserDto as any);
   }
 
   @Get()
